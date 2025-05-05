@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "backend"
+version = "0.1.0"
+description = "ChurnGuard API backend"
+authors = [{name = "Your Name", email = "your.email@example.com"}]
+dependencies = [
+    "fastapi==0.95.1",
+    "uvicorn==0.22.0",
+    "firebase-admin==6.1.0",
+    "pyjwt>=2.6.0,<3.0.0",
+    "python-multipart==0.0.6",
+    "pydantic==1.10.7",
+    "email-validator==2.0.0"
+]
