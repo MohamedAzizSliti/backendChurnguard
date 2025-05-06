@@ -5,8 +5,8 @@ from enum import Enum
 
 class UserRole(str, Enum):
     ADMIN = "admin"
-    USER = "user"
-    MANAGER = "manager"
+    MARKETING_AGENT = "marketing_agent"
+    TECHNICAL_AGENT = "technical_agent"
 
 @dataclass
 class User:
@@ -24,7 +24,7 @@ class User:
             id=data.get('id', ''),
             email=data.get('email', ''),
             full_name=data.get('full_name', ''),
-            role=UserRole(data.get('role', 'user')),
+            role=UserRole(data.get('role', 'admin')),
             password=data.get('password', ''),
             created_at=datetime.fromisoformat(data.get('created_at')) if data.get('created_at') else datetime.now(),
             updated_at=datetime.fromisoformat(data.get('updated_at')) if data.get('updated_at') else None

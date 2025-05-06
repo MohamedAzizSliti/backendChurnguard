@@ -6,7 +6,7 @@ class UserCreateDTO(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: UserRole = UserRole.USER
+    role: UserRole = UserRole.ADMIN
     
     @validator('password')
     def password_must_be_strong(cls, v):

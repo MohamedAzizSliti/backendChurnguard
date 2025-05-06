@@ -34,14 +34,6 @@ async def get_clients(current_user: UserProfileDTO = Depends(get_current_user)):
     """Get all clients"""
     return await client_service.get_all_clients()
 
-@router.get("/{client_id}", response_model=ClientDTO)
-async def get_client(
-    client_id: str = Path(..., title="The ID of the client to get"),
-    current_user: UserProfileDTO = Depends(get_current_user)
-):
-    """Get client by ID"""
-    return await client_service.get_client_by_id(client_id)
-
 @router.get("/{client_id}/detail", response_model=ClientDetailDTO)
 async def get_client_detail(
     client_id: str = Path(..., title="The ID of the client to get detailed information for"),
@@ -49,14 +41,6 @@ async def get_client_detail(
 ):
     """Get detailed client information by ID"""
     return await client_service.get_client_detail(client_id)
-
-@router.post("/", response_model=ClientDTO)
-async def create_client(
-    client: ClientCreateDTO,
-    current_user: UserProfileDTO = Depends(get_current_user)
-):
-    """Create a new client"""
-    return await client_service.create_client(client)
 
 @router.put("/{client_id}", response_model=ClientDTO)
 async def update_client(
@@ -66,3 +50,19 @@ async def update_client(
 ):
     """Update a client by ID"""
     return await client_service.update_client(client_id, client)
+
+@router.get("/{client_id}", response_model=ClientDTO)
+async def get_client(
+    client_id: str = Path(..., title="The ID of the client to get"),
+    current_user: UserProfileDTO = Depends(get_current_user)
+):
+    """Get client by ID"""
+    return await client_service.get_client_by_id(client_id)
+
+@router.post("/", response_model=ClientDTO)
+async def create_client(
+    client: ClientCreateDTO,
+    current_user: UserProfileDTO = Depends(get_current_user)
+):
+    """Create a new client"""
+    return await client_service.create_client(client)

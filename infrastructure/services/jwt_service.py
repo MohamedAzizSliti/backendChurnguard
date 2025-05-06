@@ -7,7 +7,7 @@ class JWTService:
     def __init__(self):
         self.secret_key = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
         self.algorithm = "HS256"
-        self.access_token_expire_minutes = 30
+        self.access_token_expire_minutes = 720
     
     def create_access_token(self, data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
         """Create a new JWT access token"""

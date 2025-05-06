@@ -4,13 +4,18 @@ from domain.entities.client import Client, Contact
 from domain.entities.interaction import Interaction
 from domain.entities.recommendation import Recommendation
 from domain.entities.factor import Factor
+from domain.entities.user import User, UserRole
 from infrastructure.repositories.client_repository import ClientRepository
 from infrastructure.repositories.interaction_repository import InteractionRepository
 from infrastructure.repositories.recommendation_repository import RecommendationRepository
 from infrastructure.repositories.factor_repository import FactorRepository
+from infrastructure.repositories.user_repository import UserRepository
 from datetime import datetime, timedelta
 import uuid
+from passlib.context import CryptContext
 
+# Password context for hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def initialize_sample_data(
     client_repo: ClientRepository,
@@ -210,3 +215,50 @@ async def initialize_sample_data(
             await recommendation_repo.create_from_dict(rec)
 
     print("Sample data initialization complete.")
+
+async def initialize_sample_users(user_repo: UserRepository):
+    """Initialize sample users with different roles"""
+    # Check if users already exist
+    try:
+        existing_user = await user_repo.get_by_email("admin@example.com")
+        if existing_user:
+            return
+    except:
+        pass
+    
+    print("Initializing sample users...")
+    
+    # Create sample users with different roles
+    sample_users = [
+        {
+            "email": "admin@example.com",
+            "password": pwd_context.hash("adminpass"),
+            "full_name": "Admin User",
+            "role": UserRole.ADMIN
+        },
+        {
+            "email": "marketing@example.com",
+            "password": pwd_context.hash("marketingpass"),
+            "full_name": "Marketing Agent",
+            "role": UserRole.MARKETING_AGENT
+        },
+        {
+            "email": "technical@example.com",
+            "password": pwd_context.hash("technicalpass"),
+            "full_name": "Technical Agent",
+            "role": UserRole.TECHNICAL_AGENT
+        }
+    ]
+    
+    for user_data in sample_users:
+        user = User(
+            id=None,  # Will be generated
+            email=user_data["email"],
+            full_name=user_data["full_name"],
+            role=user_data["role"],
+            password=user_data["password"],
+            created_at=datetime.now()
+        )
+        await user_repo.create(user)
+    
+    print("Sample users initialization complete.")
