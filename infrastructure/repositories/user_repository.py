@@ -23,24 +23,42 @@ class UserRepository(UserRepositoryInterface):
             return None
         return User.from_dict(data[0])
     
-
+    async def get_by_cin(self, cin: str) -> Optional[User]:
+        response = self.supabase.table(self.table).select("*").eq("cin", cin).execute()
+        data = response.data
+        if not data:
+            return None
+        return User.from_dict(data[0])
+    
+    async def get_by_code(self, code: str) -> Optional[User]:
+        response = self.supabase.table(self.table).select("*").eq("code", code).execute()
+        data = response.data
+        if not data:
+            return None
+        return User.from_dict(data[0])
+    
+    async def get_all(self) -> List[User]:
+        response = self.supabase.table(self.table).select("*").execute()
+        data = response.data
+        return [User.from_dict(item) for item in data]
+    
     async def create(self, user: User) -> User:
-                # 1. Stamp creation time
-                user.created_at = datetime.now()
-                user.updated_at = None
-                # 2. Build payload WITHOUT the id field
-                payload = user.to_dict()
-                payload.pop("id", None)
-                # 3. Insert & return the full row (including generated id)
-                response = self.supabase.table(self.table) \
-                    .insert(payload, returning="representation") \
-                    .execute()
-                inserted_rows = response.data or []
-                if not inserted_rows:
-                    raise Exception("Failed to insert user")
-                # 4. Pull the generated id back onto the domain user
-                user.id = inserted_rows[0]["id"]
-                return user
+        # 1. Stamp creation time
+        user.created_at = datetime.now()
+        user.updated_at = None
+        # 2. Build payload WITHOUT the id field
+        payload = user.to_dict()
+        payload.pop("id", None)
+        # 3. Insert & return the full row (including generated id)
+        response = self.supabase.table(self.table) \
+            .insert(payload, returning="representation") \
+            .execute()
+        inserted_rows = response.data or []
+        if not inserted_rows:
+            raise Exception("Failed to insert user")
+        # 4. Pull the generated id back onto the domain user
+        user.id = inserted_rows[0]["id"]
+        return user
     
     async def update(self, user: User) -> User:
         user.updated_at = datetime.now()

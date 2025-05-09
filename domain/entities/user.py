@@ -15,6 +15,8 @@ class User:
     full_name: str
     role: UserRole
     password: str
+    cin: str
+    code: str
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = None
     
@@ -26,6 +28,8 @@ class User:
             full_name=data.get('full_name', ''),
             role=UserRole(data.get('role', 'admin')),
             password=data.get('password', ''),
+            cin=data.get('cin', ''),
+            code=data.get('code', ''),
             created_at=datetime.fromisoformat(data.get('created_at')) if data.get('created_at') else datetime.now(),
             updated_at=datetime.fromisoformat(data.get('updated_at')) if data.get('updated_at') else None
         )
@@ -37,6 +41,8 @@ class User:
             'full_name': self.full_name,
             'role': self.role.value,
             'password': self.password,
+            'cin': self.cin,
+            'code': self.code,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

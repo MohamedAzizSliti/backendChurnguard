@@ -12,6 +12,18 @@ class UserRepositoryInterface(ABC):
         pass
     
     @abstractmethod
+    async def get_by_cin(self, cin: str) -> Optional[User]:
+        pass
+    
+    @abstractmethod
+    async def get_by_code(self, code: str) -> Optional[User]:
+        pass
+    
+    @abstractmethod
+    async def get_all(self) -> List[User]:
+        pass
+    
+    @abstractmethod
     async def create(self, user: User) -> User:
         pass
     

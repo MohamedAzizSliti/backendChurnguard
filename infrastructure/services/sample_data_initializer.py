@@ -234,19 +234,25 @@ async def initialize_sample_users(user_repo: UserRepository):
             "email": "admin@example.com",
             "password": pwd_context.hash("adminpass"),
             "full_name": "Admin User",
-            "role": UserRole.ADMIN
+            "role": UserRole.ADMIN,
+            "cin": "ADMIN123",
+            "code": "ADM001"
         },
         {
             "email": "marketing@example.com",
             "password": pwd_context.hash("marketingpass"),
             "full_name": "Marketing Agent",
-            "role": UserRole.MARKETING_AGENT
+            "role": UserRole.MARKETING_AGENT,
+            "cin": "MKT123",
+            "code": "MKT001"
         },
         {
             "email": "technical@example.com",
             "password": pwd_context.hash("technicalpass"),
             "full_name": "Technical Agent",
-            "role": UserRole.TECHNICAL_AGENT
+            "role": UserRole.TECHNICAL_AGENT,
+            "cin": "TECH123",
+            "code": "TECH001"
         }
     ]
     
@@ -257,6 +263,8 @@ async def initialize_sample_users(user_repo: UserRepository):
             full_name=user_data["full_name"],
             role=user_data["role"],
             password=user_data["password"],
+            cin=user_data["cin"],
+            code=user_data["code"],
             created_at=datetime.now()
         )
         await user_repo.create(user)

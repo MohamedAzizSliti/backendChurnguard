@@ -43,6 +43,8 @@ async def create_tables():
             full_name text NOT NULL,
             role text NOT NULL,
             password text NOT NULL,
+            cin text UNIQUE NOT NULL,
+            code text UNIQUE NOT NULL,
             created_at timestamptz NOT NULL,
             updated_at timestamptz
         );
