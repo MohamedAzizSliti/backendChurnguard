@@ -54,7 +54,7 @@ class AuthApplicationService:
             
             # Create user in our domain
             user = User(
-                id=None,  # Supabase will generate the ID
+                id="",  # Will be set by Supabase
                 email=user_data.email,
                 full_name=user_data.full_name,
                 role=user_data.role,
@@ -66,6 +66,12 @@ class AuthApplicationService:
             
             # Save user to repository (Supabase)
             created_user = await self.user_repository.create(user)
+            
+            if not created_user or not created_user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to create user: No ID returned from database"
+                )
             
             # Generate JWT token
             token = self.jwt_service.create_access_token({"sub": created_user.id})
@@ -84,7 +90,7 @@ class AuthApplicationService:
             raise
         except Exception as e:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Registration failed: {str(e)}"
             )
     

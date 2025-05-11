@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import APIRouter, Depends, HTTPException, status, Path, Body
 from fastapi.security import OAuth2PasswordBearer
 from application.services.auth_service import AuthApplicationService
 from application.dtos.auth_dtos import UserCreateDTO, UserLoginDTO, TokenResponseDTO, UserProfileDTO, UserListDTO, UserUpdateDTO
@@ -6,6 +6,7 @@ from infrastructure.repositories.user_repository import UserRepository
 from infrastructure.services.jwt_service import JWTService
 from infrastructure.services.supabase_initializer import get_supabase_client
 import jwt
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -71,3 +72,44 @@ async def update_user(
 ):
     """Update a user (admin only)"""
     return await auth_service.update_user(user_id, user_data, current_user)
+
+@router.post("/users", response_model=TokenResponseDTO)
+async def create_user(
+    user: UserCreateDTO,
+    current_user: UserProfileDTO = Depends(get_current_user)
+):
+    """Create a new user (admin only)"""
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can create users"
+        )
+    try:
+        return await auth_service.register_user(user)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create user: {str(e)}"
+        )
+
+@router.put("/users/me", response_model=UserProfileDTO)
+async def update_self(
+    user_data: UserUpdateDTO = Body(...),
+    current_user: UserProfileDTO = Depends(get_current_user)
+):
+    """Update own profile data (authenticated user)"""
+    return await auth_service.update_self(current_user.id, user_data)
+
+class PasswordChangeDTO(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.put("/users/me/password")
+async def change_password(
+    passwords: PasswordChangeDTO = Body(...),
+    current_user: UserProfileDTO = Depends(get_current_user)
+):
+    """Change own password (authenticated user)"""
+    return await auth_service.change_password(current_user.id, passwords.current_password, passwords.new_password)
