@@ -22,6 +22,9 @@ from presentation.api.auth_api import router as auth_router
 from presentation.api.client_api import router as client_router
 from presentation.api.report_api import router as report_router
 from presentation.api.note_api import router as note_router
+from presentation.api.customer_issues_api import router as customer_issues_router
+from presentation.api.email_notifications_api import router as email_notifications_router
+from presentation.api.customer_incident_predictions_api import router as customer_incident_predictions_router
 
 # Import Supabase initializer
 from infrastructure.services.supabase_initializer import get_supabase_client
@@ -90,6 +93,9 @@ app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(client_router, prefix="/clients", tags=["Clients"])
 app.include_router(report_router, prefix="/reports", tags=["Reports"])
 app.include_router(note_router, prefix="/notes", tags=["Notes"])
+app.include_router(customer_issues_router, prefix="/customer-issues", tags=["Customer Issues"])
+app.include_router(email_notifications_router, prefix="/email-notifications", tags=["Email Notifications"])
+app.include_router(customer_incident_predictions_router, prefix="/customer-incident-predictions", tags=["Customer Incident Predictions"])
 
 # Health check endpoint
 @app.get("/health", tags=["Health"])
