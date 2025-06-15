@@ -1,0 +1,6 @@
+email,name,issue,status
+john.doe@example.com,John Doe,Connection timeout issue,pending
+jane.smith@example.com,Jane Smith,Billing discrepancy,pending
+mike.johnson@example.com,Mike Johnson,Service interruption,pending
+sarah.wilson@example.com,Sarah Wilson,Technical support needed,pending
+david.brown@example.com,David Brown,Account access problem,pending

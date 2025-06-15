@@ -111,9 +111,21 @@ class EmailNotificationApplicationService:
                 }
                 
         except Exception as e:
+            import traceback
+            logging.error(f"Error processing CSV file: {str(e)}")
+            logging.error(f"Traceback: {traceback.format_exc()}")
+
+            error_message = f"Error processing CSV file: {str(e)}"
+
+            # Check for common database errors
+            if "relation" in str(e).lower() and "does not exist" in str(e).lower():
+                error_message += " - The email_notifications table may not exist. Please check your database setup."
+            elif "connection" in str(e).lower():
+                error_message += " - Database connection error. Please check your database configuration."
+
             return {
                 "success": False,
-                "message": f"Error processing CSV file: {str(e)}",
+                "message": error_message,
                 "processed_count": 0,
                 "errors": [str(e)],
                 "total_rows": 0

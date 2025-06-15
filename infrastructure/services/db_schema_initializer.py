@@ -11,13 +11,19 @@ async def create_tables():
     try:
         conn = await asyncpg.connect(dsn=db_url)
         
-        # Example for clients table, repeat for others as needed
+        # Create clients table
         await conn.execute("""
         CREATE TABLE IF NOT EXISTS clients (
             id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-            email text,
-            full_name text,
-            created_at timestamptz,
+            name text NOT NULL,
+            segment text NOT NULL,
+            since text NOT NULL,
+            churn_risk text NOT NULL,
+            contacts jsonb NOT NULL,
+            monthly_revenue text,
+            churn_trend text,
+            churn_trend_days integer,
+            created_at timestamptz DEFAULT NOW(),
             updated_at timestamptz
         );
         """)
@@ -49,8 +55,92 @@ async def create_tables():
             updated_at timestamptz
         );
         """)
-        
-        # Repeat for other tables: interactions, recommendations, factors
+
+        # Create email_notifications table
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS email_notifications (
+            id SERIAL PRIMARY KEY,
+            email text NOT NULL,
+            name text NOT NULL,
+            issue text NOT NULL,
+            status text NOT NULL DEFAULT 'pending',
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW(),
+            sent_at timestamptz
+        );
+        """)
+
+        # Create customer_issues table
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS customer_issues (
+            id SERIAL PRIMARY KEY,
+            customer_id float,
+            code_contrat float,
+            client_type float,
+            client_region float,
+            client_categorie float,
+            incident_title text,
+            churn_risk float,
+            status text DEFAULT 'not sent',
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW()
+        );
+        """)
+
+        # Create customer_incident_predictions table
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS customer_incident_predictions (
+            id SERIAL PRIMARY KEY,
+            customer_id text,
+            client_region text,
+            client_type text,
+            client_category text,
+            q1_prediction float,
+            q2_prediction float,
+            q3_prediction float,
+            q4_prediction float,
+            most_likely_incident text,
+            recommendation text,
+            created_at timestamptz DEFAULT NOW(),
+            updated_at timestamptz DEFAULT NOW()
+        );
+        """)
+
+        # Create interactions table
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS interactions (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            clientId uuid NOT NULL,
+            type text NOT NULL,
+            date text NOT NULL,
+            details text NOT NULL,
+            created_at timestamptz DEFAULT NOW()
+        );
+        """)
+
+        # Create recommendations table
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS recommendations (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            clientId uuid NOT NULL,
+            title text NOT NULL,
+            impact integer NOT NULL,
+            details text NOT NULL,
+            created_at timestamptz DEFAULT NOW()
+        );
+        """)
+
+        # Create factors table
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS factors (
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            clientId uuid NOT NULL,
+            name text NOT NULL,
+            percentage integer NOT NULL,
+            created_at timestamptz DEFAULT NOW()
+        );
+        """)
+
         await conn.close()
         logging.info("Database tables created successfully.")
     except Exception as e:

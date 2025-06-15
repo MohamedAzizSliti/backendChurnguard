@@ -5,21 +5,25 @@ A FastAPI backend application for managing customer churn, with user role manage
 ## Features
 
 - **Authentication & Authorization**
+
   - JWT-based authentication
   - Role-based access control
   - Secure password hashing with bcrypt
 
 - **User Role Management**
+
   - Three distinct roles: Admin, Marketing Agent, Technical Agent
   - Role-specific permissions and access controls
 
 - **Notes System**
+
   - Role-based messaging system
   - Admins can send notes to any role
   - Marketing and Technical agents can only send notes to Admins
   - Read status tracking for notes
 
 - **Client Management**
+
   - Track client details and churn risk
   - Record client interactions and contact history
   - Manage client-specific churn factors
@@ -39,22 +43,26 @@ A FastAPI backend application for managing customer churn, with user role manage
 ## Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd <repository-directory>
    ```
 
 2. Install dependencies:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. Create a `.env` file based on `example.env`:
+
    ```bash
    cp example.env .env
    ```
 
 4. Configure your Supabase credentials in the `.env` file:
+
    ```
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_KEY=your-supabase-key
@@ -62,6 +70,7 @@ A FastAPI backend application for managing customer churn, with user role manage
    ```
 
    You can find these values in your Supabase dashboard:
+
    - SUPABASE_URL: Project URL (Settings > API)
    - SUPABASE_KEY: Project API key (Settings > API > Project API keys > anon/public)
    - SUPABASE_DB_URL: Database connection string (Settings > Database > Connection string > URI)
@@ -101,15 +110,94 @@ CREATE TABLE IF NOT EXISTS notes (
 -- Create clients table
 CREATE TABLE IF NOT EXISTS clients (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    email text,
-    full_name text,
-    created_at timestamptz,
+    name text NOT NULL,
+    segment text NOT NULL,
+    since text NOT NULL,
+    churn_risk text NOT NULL,
+    contacts jsonb NOT NULL,
+    monthly_revenue text,
+    churn_trend text,
+    churn_trend_days integer,
+    created_at timestamptz DEFAULT NOW(),
     updated_at timestamptz
+);
+
+-- Create email_notifications table
+CREATE TABLE IF NOT EXISTS email_notifications (
+    id SERIAL PRIMARY KEY,
+    email text NOT NULL,
+    name text NOT NULL,
+    issue text NOT NULL,
+    status text NOT NULL DEFAULT 'pending',
+    created_at timestamptz DEFAULT NOW(),
+    updated_at timestamptz DEFAULT NOW(),
+    sent_at timestamptz
+);
+
+-- Create customer_issues table
+CREATE TABLE IF NOT EXISTS customer_issues (
+    id SERIAL PRIMARY KEY,
+    customer_id float,
+    code_contrat float,
+    client_type float,
+    client_region float,
+    client_categorie float,
+    incident_title text,
+    churn_risk float,
+    status text DEFAULT 'not sent',
+    created_at timestamptz DEFAULT NOW(),
+    updated_at timestamptz DEFAULT NOW()
+);
+
+-- Create customer_incident_predictions table
+CREATE TABLE IF NOT EXISTS customer_incident_predictions (
+    id SERIAL PRIMARY KEY,
+    customer_id text,
+    client_region text,
+    client_type text,
+    client_category text,
+    q1_prediction float,
+    q2_prediction float,
+    q3_prediction float,
+    q4_prediction float,
+    most_likely_incident text,
+    recommendation text,
+    created_at timestamptz DEFAULT NOW(),
+    updated_at timestamptz DEFAULT NOW()
+);
+
+-- Create interactions table
+CREATE TABLE IF NOT EXISTS interactions (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    clientId uuid NOT NULL,
+    type text NOT NULL,
+    date text NOT NULL,
+    details text NOT NULL,
+    created_at timestamptz DEFAULT NOW()
+);
+
+-- Create recommendations table
+CREATE TABLE IF NOT EXISTS recommendations (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    clientId uuid NOT NULL,
+    title text NOT NULL,
+    impact integer NOT NULL,
+    details text NOT NULL,
+    created_at timestamptz DEFAULT NOW()
+);
+
+-- Create factors table
+CREATE TABLE IF NOT EXISTS factors (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    clientId uuid NOT NULL,
+    name text NOT NULL,
+    percentage integer NOT NULL,
+    created_at timestamptz DEFAULT NOW()
 );
 
 -- Create sample users with different roles
 INSERT INTO users (email, full_name, role, password, created_at)
-VALUES 
+VALUES
     ('admin@example.com', 'Admin User', 'admin', '$2b$12$1mE7KFkbqcCwZKOV8Q4jYuVRYGyrn8jmKzWtAxW.f2ksH0tuo/aSG', NOW()),
     ('marketing@example.com', 'Marketing Agent', 'marketing_agent', '$2b$12$M3L44ZLkDlQZWNY9eQVkDeHaZZg.vNyTSgO1wy8nNdYjnOXk0p2m6', NOW()),
     ('technical@example.com', 'Technical Agent', 'technical_agent', '$2b$12$D.71gTCuj0uMmGNVvdz5te96TPAX.Bm62YZq0K1QCWsVpuTUEQBdS', NOW());
@@ -118,6 +206,7 @@ VALUES
 ## Running the application
 
 Start the server:
+
 ```bash
 python main.py
 ```
@@ -127,6 +216,7 @@ The API will be available at http://localhost:8000
 ## API Documentation
 
 Once the server is running, you can access the API documentation at:
+
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
@@ -135,11 +225,13 @@ Once the server is running, you can access the API documentation at:
 When the application starts for the first time, it creates the following default users:
 
 1. Admin:
+
    - Email: admin@example.com
    - Password: adminpass
    - Role: Admin
 
 2. Marketing Agent:
+
    - Email: marketing@example.com
    - Password: marketingpass
    - Role: Marketing Agent
@@ -194,10 +286,12 @@ The notes system allows communication between different roles with specific perm
 ### Permissions
 
 - **Admin Role**:
+
   - Can send notes to any role (Admin, Marketing Agent, Technical Agent)
   - Can read notes sent to the Admin role
 
 - **Marketing Agent Role**:
+
   - Can only send notes to Admins
   - Can read notes sent to the Marketing Agent role
 
@@ -208,6 +302,7 @@ The notes system allows communication between different roles with specific perm
 ### How Notes Work
 
 1. **Role-Based Delivery**:
+
    - Notes are sent to roles (Admin, Marketing Agent, Technical Agent)
    - All users with that role will see the note
    - Good for announcements or messages meant for entire departments
@@ -219,10 +314,12 @@ The notes system allows communication between different roles with specific perm
 ### Example Workflows
 
 1. **Admin to Marketing Team**:
+
    - Admin creates a note with recipients = ["marketing_agent"]
    - All Marketing Agents will see this note in their inbox
 
 2. **Technical Agent to Admin**:
+
    - Technical Agent creates a note with recipients = ["admin"]
    - All Admins will see this note in their inbox
 
@@ -265,15 +362,18 @@ To make the notes system real-time, the following enhancements could be implemen
 The application follows a clean architecture pattern:
 
 1. **Domain Layer** (Innermost)
+
    - Contains business entities, value objects, and repository interfaces
    - No dependencies on outer layers
 
 2. **Application Layer**
+
    - Contains application services and DTOs
    - Orchestrates domain objects to perform use cases
    - Depends only on the domain layer
 
 3. **Infrastructure Layer**
+
    - Implements repository interfaces from the domain layer
    - Contains database access code, external service integrations
    - Depends on domain and application layers
@@ -307,4 +407,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+This project is licensed under the MIT License - see the LICENSE file for details.

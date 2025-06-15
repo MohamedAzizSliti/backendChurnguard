@@ -75,7 +75,27 @@ async def upload_csv_email_notifications(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="File must be a valid UTF-8 encoded CSV file")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+        import traceback
+        import logging
+
+        # Log the full error for debugging
+        logging.error(f"Error processing CSV file: {str(e)}")
+        logging.error(f"Traceback: {traceback.format_exc()}")
+
+        # Return a more detailed error message
+        error_detail = {
+            "error": "Error processing file",
+            "message": str(e),
+            "type": type(e).__name__
+        }
+
+        # Check for common database errors
+        if "relation" in str(e).lower() and "does not exist" in str(e).lower():
+            error_detail["suggestion"] = "The email_notifications table may not exist. Please check your database setup."
+        elif "connection" in str(e).lower():
+            error_detail["suggestion"] = "Database connection error. Please check your database configuration."
+
+        raise HTTPException(status_code=500, detail=error_detail)
 
 @router.get("/{notification_id}", response_model=EmailNotificationDTO)
 async def get_email_notification(
